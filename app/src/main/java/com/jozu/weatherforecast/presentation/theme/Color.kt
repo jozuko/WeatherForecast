@@ -1,4 +1,4 @@
-package com.jozu.weatherforecast.ui.theme
+package com.jozu.weatherforecast.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
