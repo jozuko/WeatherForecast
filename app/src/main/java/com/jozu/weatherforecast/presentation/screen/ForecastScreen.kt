@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jozu.weatherforecast.domain.Future
 import com.jozu.weatherforecast.domain.repository.Area
+import com.jozu.weatherforecast.domain.repository.Center
+import com.jozu.weatherforecast.domain.repository.Office
 
 /**
  * 天気予報を検索・表示する画面
@@ -88,14 +90,17 @@ fun DataScreen(
     viewModel: ForecastViewModel,
     area: Area,
 ) {
-    val centerIndex = viewModel.centerIndex
-    val centerName = area.centers.entries.toList()[centerIndex].value.name
+    val center: Center? = area.centers[viewModel.centerId]
+    val office: Office? = area.offices[viewModel.officeId]
 
     Box(modifier = modifier.padding(8.dp)) {
         Column {
             Row {
                 Button(onClick = { /*TODO*/ }) {
-                    Text(centerName)
+                    Text(center?.name ?: "未選択")
+                }
+                Button(onClick = { /*TODO*/ }) {
+                    Text(office?.name ?: "未選択")
                 }
             }
 

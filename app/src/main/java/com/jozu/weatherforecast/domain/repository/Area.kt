@@ -13,7 +13,51 @@ data class Area(
     val class10s: Map<String, Class10>,
     val class15s: Map<String, Class15>,
     val class20s: Map<String, Class20>,
-)
+) {
+    fun getCenter(index: Int): Pair<String, Center>? {
+        val centerList = centers.entries.toList()
+        if (centerList.isEmpty()) {
+            return null
+        }
+
+        if (index < 0) {
+            val firstCenter = centerList.first()
+            return Pair(firstCenter.key, firstCenter.value)
+        }
+
+        if (index >= centerList.count()) {
+            val firstCenter = centerList.first()
+            return Pair(firstCenter.key, firstCenter.value)
+        }
+
+        val center = centerList[index]
+        return Pair(center.key, center.value)
+    }
+
+    fun getOffice(centerId: String, officeIndex: Int): Pair<String, Office>? {
+        val center = centers[centerId] ?: return null
+
+        val officeList = offices.mapNotNull { (officeId, office) ->
+            if (center.children.contains(officeId)) {
+                Pair(officeId, office)
+            } else {
+                null
+            }
+        }
+
+        if (officeList.isEmpty()) {
+            return null
+        }
+        if (officeIndex < 0) {
+            return officeList.first()
+        }
+        if (officeIndex >= officeList.count()) {
+            return officeList.first()
+        }
+
+        return officeList[officeIndex]
+    }
+}
 
 data class Center(
     val name: String,

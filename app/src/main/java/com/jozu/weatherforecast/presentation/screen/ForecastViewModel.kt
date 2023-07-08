@@ -23,7 +23,8 @@ class ForecastViewModel @Inject constructor(
     private val getAreaUseCase: GetAreaUseCase,
 ) : ViewModel() {
     var areaFuture: Future<Area> by mutableStateOf(Future.Proceeding)
-    var centerIndex: Int by mutableStateOf(1)
+    var centerId: String by mutableStateOf("")
+    var officeId: String by mutableStateOf("")
 
     init {
         refreshArea()
@@ -35,15 +36,30 @@ class ForecastViewModel @Inject constructor(
             getAreaUseCase.invoke().collectLatest {
                 areaFuture = it
                 if (it is Future.Success) {
-                    centerIndex = 0
+                    centerId = it.value.getCenter(0)?.first ?: ""
+                    officeId = it.value.getOffice(centerId, 0)?.first ?: ""
                 }
             }
         }
     }
 
-    fun selectAreaCenter(index: Int) {
-        viewModelScope.launch {
-            centerIndex = index
+    fun selectAreaCenter(id: String) {
+        if (centerId != id) {
+            viewModelScope.launch {
+                val areaData: Future<Area> = areaFuture
+                if (areaData is Future.Success) {
+                    centerId = id
+                    officeId = areaData.value.getOffice(centerId, 0)?.first ?: ""
+                }
+            }
+        }
+    }
+
+    fun selectAreaOffice(id: String) {
+        if (officeId != id) {
+            viewModelScope.launch {
+                officeId = id
+            }
         }
     }
 }
