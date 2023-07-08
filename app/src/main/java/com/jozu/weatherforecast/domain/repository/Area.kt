@@ -34,6 +34,18 @@ data class Area(
         return Pair(center.key, center.value)
     }
 
+    fun getCenterOffices(centerId: String): List<Pair<String, Office>> {
+        val center = centers[centerId] ?: return listOf()
+
+        return offices.mapNotNull { (officeId, office) ->
+            if (center.children.contains(officeId)) {
+                Pair(officeId, office)
+            } else {
+                null
+            }
+        }
+    }
+
     fun getOffice(centerId: String, officeIndex: Int): Pair<String, Office>? {
         val center = centers[centerId] ?: return null
 

@@ -23,8 +23,19 @@ class ForecastViewModel @Inject constructor(
     private val getAreaUseCase: GetAreaUseCase,
 ) : ViewModel() {
     var areaFuture: Future<Area> by mutableStateOf(Future.Proceeding)
+        private set
+
     var centerId: String by mutableStateOf("")
+        private set
+
     var officeId: String by mutableStateOf("")
+        private set
+
+    var isShowCenterSelectDialog: Boolean by mutableStateOf(false)
+        private set
+
+    var isShowOfficeSelectDialog: Boolean by mutableStateOf(false)
+        private set
 
     init {
         refreshArea()
@@ -60,6 +71,30 @@ class ForecastViewModel @Inject constructor(
             viewModelScope.launch {
                 officeId = id
             }
+        }
+    }
+
+    fun showCenterSelectDialog() {
+        viewModelScope.launch {
+            isShowCenterSelectDialog = true
+        }
+    }
+
+    fun hideCenterSelectDialog() {
+        viewModelScope.launch {
+            isShowCenterSelectDialog = false
+        }
+    }
+
+    fun showOfficeSelectDialog() {
+        viewModelScope.launch {
+            isShowOfficeSelectDialog = true
+        }
+    }
+
+    fun hideOfficeSelectDialog() {
+        viewModelScope.launch {
+            isShowOfficeSelectDialog = false
         }
     }
 }

@@ -23,6 +23,7 @@ import com.jozu.weatherforecast.domain.Future
 import com.jozu.weatherforecast.domain.repository.Area
 import com.jozu.weatherforecast.domain.repository.Center
 import com.jozu.weatherforecast.domain.repository.Office
+import com.jozu.weatherforecast.presentation.dialog.SingleSelectionDialog
 
 /**
  * 天気予報を検索・表示する画面
@@ -44,7 +45,11 @@ fun ForecastScreen(
         when (areaState) {
             is Future.Proceeding -> LoadingScreen(modifier)
             is Future.Error -> ErrorScreen(modifier, viewModel)
-            is Future.Success -> DataScreen(modifier, viewModel, areaState.value)
+            is Future.Success -> {
+                DataScreen(modifier, viewModel, areaState.value)
+                CenterSelectDialog(viewModel, areaState.value)
+                OfficeSelectDialog(viewModel, areaState.value)
+            }
         }
     }
 }
@@ -93,21 +98,85 @@ fun DataScreen(
     val center: Center? = area.centers[viewModel.centerId]
     val office: Office? = area.offices[viewModel.officeId]
 
-    Box(modifier = modifier.padding(8.dp)) {
-        Column {
+    Box(
+        modifier = modifier
+            .padding(8.dp)
+            .fillMaxSize(),
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             Row {
-                Button(onClick = { /*TODO*/ }) {
+                Button(
+                    onClick = {
+                        viewModel.showCenterSelectDialog()
+                    },
+                ) {
                     Text(center?.name ?: "未選択")
                 }
-                Button(onClick = { /*TODO*/ }) {
+                Button(
+                    onClick = {
+                        viewModel.showOfficeSelectDialog()
+                    },
+                ) {
                     Text(office?.name ?: "未選択")
                 }
             }
 
-            Button(onClick = { /*TODO*/ }) {
-                Text("検索")
+            Box(
+                modifier = Modifier
+                    .align(Alignment.End),
+            ) {
+                Button(onClick = { /*TODO*/ }) {
+                    Text("検索")
+                }
             }
         }
     }
+}
 
+@Composable
+fun CenterSelectDialog(
+    viewModel: ForecastViewModel,
+    area: Area,
+) {
+    if (viewModel.isShowCenterSelectDialog) {
+        val centers = area.centers.toList()
+
+        SingleSelectionDialog(
+            title = "地方選択",
+            labels = centers.map { it.second.name },
+            selection = centers,
+            defaultSelectedIndex = centers.indexOfFirst { it.first == viewModel.centerId },
+            onConfirmRequest = { (centerId, _) ->
+                viewModel.selectAreaCenter(centerId)
+                viewModel.hideCenterSelectDialog()
+            },
+            onDismissRequest = {
+                viewModel.hideCenterSelectDialog()
+            },
+        )
+    }
+}
+
+@Composable
+fun OfficeSelectDialog(
+    viewModel: ForecastViewModel,
+    area: Area,
+) {
+    if (viewModel.isShowOfficeSelectDialog) {
+        val offices = area.getCenterOffices(viewModel.centerId)
+
+        SingleSelectionDialog(
+            title = "地方選択",
+            labels = offices.map { it.second.name },
+            selection = offices,
+            defaultSelectedIndex = offices.indexOfFirst { it.first == viewModel.officeId },
+            onConfirmRequest = { (officeId, _) ->
+                viewModel.selectAreaOffice(officeId)
+                viewModel.hideOfficeSelectDialog()
+            },
+            onDismissRequest = {
+                viewModel.hideOfficeSelectDialog()
+            },
+        )
+    }
 }
