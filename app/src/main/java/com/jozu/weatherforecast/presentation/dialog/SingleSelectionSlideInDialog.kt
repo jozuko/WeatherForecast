@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 
 /**
  *
@@ -33,7 +32,7 @@ import androidx.compose.ui.window.Dialog
  * Copyright (c) 2023 Studio Jozu. All rights reserved.
  */
 @Composable
-fun <T> SingleSelectionDialog(
+fun <T> SingleSelectionSlideInDialog(
     modifier: Modifier = Modifier,
     labels: List<String>,
     selection: List<T>,
@@ -46,9 +45,7 @@ fun <T> SingleSelectionDialog(
     dismissButtonLabel: String = stringResource(id = android.R.string.cancel),
 ) {
     var selectedIndex by remember { mutableStateOf(defaultSelectedIndex) }
-    Dialog(
-        onDismissRequest = onDismissRequest,
-    ) {
+    SlideInTransitionDialog(onDismissRequest = onDismissRequest) { helper ->
         Surface(
             modifier = modifier,
             shape = AlertDialogDefaults.shape,
@@ -87,8 +84,14 @@ fun <T> SingleSelectionDialog(
                     selectedIndex = selectedIndex,
                     dismissButtonLabel = dismissButtonLabel,
                     confirmButtonLabel = confirmButtonLabel,
-                    onDismissRequest = onDismissRequest,
-                    onConfirmRequest = onConfirmRequest,
+                    onDismissRequest = {
+                        helper.triggerAnimatedClose()
+                    },
+                    onConfirmRequest = {
+                        helper.triggerAnimatedClose {
+                            onConfirmRequest.invoke(it)
+                        }
+                    },
                 )
             }
         }

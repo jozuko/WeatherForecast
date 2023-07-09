@@ -24,6 +24,7 @@ import com.jozu.weatherforecast.domain.repository.Area
 import com.jozu.weatherforecast.domain.repository.Center
 import com.jozu.weatherforecast.domain.repository.Office
 import com.jozu.weatherforecast.presentation.dialog.SingleSelectionDialog
+import com.jozu.weatherforecast.presentation.dialog.SingleSelectionSlideInDialog
 
 /**
  * 天気予報を検索・表示する画面
@@ -57,25 +58,20 @@ fun ForecastScreen(
 @Composable
 fun LoadingScreen(modifier: Modifier) {
     Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
+        modifier = modifier, contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            modifier = Modifier.size(60.dp),
-            color = MaterialTheme.colorScheme.primary,
-            strokeWidth = 10.dp
+            modifier = Modifier.size(60.dp), color = MaterialTheme.colorScheme.primary, strokeWidth = 10.dp
         )
     }
 }
 
 @Composable
 fun ErrorScreen(
-    modifier: Modifier,
-    viewModel: ForecastViewModel
+    modifier: Modifier, viewModel: ForecastViewModel
 ) {
     Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
+        modifier = modifier, contentAlignment = Alignment.Center
     ) {
         Column {
             Text("読み込み失敗")
@@ -122,8 +118,7 @@ fun DataScreen(
             }
 
             Box(
-                modifier = Modifier
-                    .align(Alignment.End),
+                modifier = Modifier.align(Alignment.End),
             ) {
                 Button(onClick = { /*TODO*/ }) {
                     Text("検索")
@@ -141,14 +136,13 @@ fun CenterSelectDialog(
     if (viewModel.isShowCenterSelectDialog) {
         val centers = area.centers.toList()
 
-        SingleSelectionDialog(
+        SingleSelectionSlideInDialog(
             title = "地方選択",
             labels = centers.map { it.second.name },
             selection = centers,
             defaultSelectedIndex = centers.indexOfFirst { it.first == viewModel.centerId },
             onConfirmRequest = { (centerId, _) ->
                 viewModel.selectAreaCenter(centerId)
-                viewModel.hideCenterSelectDialog()
             },
             onDismissRequest = {
                 viewModel.hideCenterSelectDialog()
@@ -166,7 +160,7 @@ fun OfficeSelectDialog(
         val offices = area.getCenterOffices(viewModel.centerId)
 
         SingleSelectionDialog(
-            title = "地方選択",
+            title = "事務所選択",
             labels = offices.map { it.second.name },
             selection = offices,
             defaultSelectedIndex = offices.indexOfFirst { it.first == viewModel.officeId },
