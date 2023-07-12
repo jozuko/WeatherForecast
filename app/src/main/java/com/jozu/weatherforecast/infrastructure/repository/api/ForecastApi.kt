@@ -1,8 +1,10 @@
 package com.jozu.weatherforecast.infrastructure.repository.api
 
-import com.jozu.weatherforecast.domain.repository.Area
+import com.jozu.weatherforecast.domain.repository.AreaApiModel
+import com.jozu.weatherforecast.domain.repository.ForecastApiModel
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 /**
  *
@@ -11,5 +13,10 @@ import retrofit2.http.GET
  */
 interface ForecastApi {
     @GET("common/const/area.json")
-    suspend fun getArea(): Response<Area>
+    suspend fun getArea(): Response<AreaApiModel>
+
+    @GET("forecast/data/forecast/{office-id}.json")
+    suspend fun getForecast(
+        @Path("office-id") officeId: String,
+    ): Response<List<ForecastApiModel>>
 }

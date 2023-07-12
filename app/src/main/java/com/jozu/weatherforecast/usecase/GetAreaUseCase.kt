@@ -1,7 +1,7 @@
 package com.jozu.weatherforecast.usecase
 
+import com.jozu.weatherforecast.domain.Area
 import com.jozu.weatherforecast.domain.Future
-import com.jozu.weatherforecast.domain.repository.Area
 import kotlinx.coroutines.flow.Flow
 
 /**

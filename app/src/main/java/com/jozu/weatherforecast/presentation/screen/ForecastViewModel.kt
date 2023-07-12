@@ -1,13 +1,18 @@
 package com.jozu.weatherforecast.presentation.screen
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jozu.weatherforecast.domain.Area
+import com.jozu.weatherforecast.domain.Center
+import com.jozu.weatherforecast.domain.Forecast
 import com.jozu.weatherforecast.domain.Future
-import com.jozu.weatherforecast.domain.repository.Area
+import com.jozu.weatherforecast.domain.Office
 import com.jozu.weatherforecast.usecase.GetAreaUseCase
+import com.jozu.weatherforecast.usecase.GetForecastUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -21,14 +26,18 @@ import javax.inject.Inject
 @HiltViewModel
 class ForecastViewModel @Inject constructor(
     private val getAreaUseCase: GetAreaUseCase,
+    private val getForecastUseCase: GetForecastUseCase,
 ) : ViewModel() {
-    var areaFuture: Future<Area> by mutableStateOf(Future.Proceeding)
+    var areaFuture: Future<Area> by mutableStateOf(Future.Idel)
         private set
 
-    var centerId: String by mutableStateOf("")
+    var forecastFuture: Future<Forecast> by mutableStateOf(Future.Idel)
         private set
 
-    var officeId: String by mutableStateOf("")
+    var center: Center? by mutableStateOf(null)
+        private set
+
+    var office: Office? by mutableStateOf(null)
         private set
 
     var isShowCenterSelectDialog: Boolean by mutableStateOf(false)
@@ -47,29 +56,29 @@ class ForecastViewModel @Inject constructor(
             getAreaUseCase.invoke().collectLatest {
                 areaFuture = it
                 if (it is Future.Success) {
-                    centerId = it.value.getCenter(0)?.first ?: ""
-                    officeId = it.value.getOffice(centerId, 0)?.first ?: ""
+                    center = it.value.centers.firstOrNull()
+                    office = center?.offices?.firstOrNull()
                 }
             }
         }
     }
 
-    fun selectAreaCenter(id: String) {
-        if (centerId != id) {
+    fun selectAreaCenter(selected: Center) {
+        if (center != selected) {
             viewModelScope.launch {
                 val areaData: Future<Area> = areaFuture
                 if (areaData is Future.Success) {
-                    centerId = id
-                    officeId = areaData.value.getOffice(centerId, 0)?.first ?: ""
+                    center = selected
+                    office = center?.offices?.firstOrNull()
                 }
             }
         }
     }
 
-    fun selectAreaOffice(id: String) {
-        if (officeId != id) {
+    fun selectAreaOffice(selected: Office) {
+        if (office != selected) {
             viewModelScope.launch {
-                officeId = id
+                office = selected
             }
         }
     }
@@ -95,6 +104,20 @@ class ForecastViewModel @Inject constructor(
     fun hideOfficeSelectDialog() {
         viewModelScope.launch {
             isShowOfficeSelectDialog = false
+        }
+    }
+
+    fun searchForecast() {
+        val office = office ?: return
+
+        viewModelScope.launch {
+            forecastFuture = Future.Proceeding
+            getForecastUseCase.invoke(office).collectLatest {
+                forecastFuture = it
+                if (it is Future.Success) {
+                    Log.d("Search!!", "${it.value}")
+                }
+            }
         }
     }
 }
