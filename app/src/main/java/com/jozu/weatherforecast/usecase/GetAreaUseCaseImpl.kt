@@ -18,23 +18,23 @@ class GetAreaUseCaseImpl @Inject constructor(
 ) : GetAreaUseCase {
     override suspend fun invoke(): Flow<Future<Area>> {
         return forecastRepository.getArea().map { apiModelFuture ->
-                when (apiModelFuture) {
-                    is Future.Error -> {
-                        Future.Error(apiModelFuture.error)
-                    }
+            when (apiModelFuture) {
+                is Future.Error -> {
+                    Future.Error(apiModelFuture.error)
+                }
 
-                    is Future.Success -> {
-                        Future.Success(AreaAdapter.adaptFromApi(apiModelFuture.value))
-                    }
+                is Future.Success -> {
+                    Future.Success(AreaAdapter.adaptFromApi(apiModelFuture.value))
+                }
 
-                    is Future.Proceeding -> {
-                        Future.Proceeding
-                    }
+                is Future.Proceeding -> {
+                    Future.Proceeding
+                }
 
-                    else -> {
-                        Future.Idel
-                    }
+                else -> {
+                    Future.Idle
                 }
             }
+        }
     }
 }

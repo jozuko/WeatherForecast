@@ -11,5 +11,5 @@ import kotlinx.coroutines.flow.Flow
  * Copyright (c) 2023 Studio Jozu. All rights reserved.
  */
 interface GetAreaUseCase {
-    suspend fun invoke(): Flow<Future<Area>>
+    suspend operator fun invoke(): Flow<Future<Area>>
 }

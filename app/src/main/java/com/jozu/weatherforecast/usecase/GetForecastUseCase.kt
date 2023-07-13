@@ -11,5 +11,5 @@ import kotlinx.coroutines.flow.Flow
  * Copyright (c) 2023 Studio Jozu. All rights reserved.
  */
 interface GetForecastUseCase {
-    suspend fun invoke(office: Office): Flow<Future<Forecast>>
+    suspend operator fun invoke(office: Office): Flow<Future<Forecast>>
 }
