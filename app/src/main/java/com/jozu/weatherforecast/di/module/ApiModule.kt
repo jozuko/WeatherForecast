@@ -12,6 +12,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -61,6 +62,17 @@ object ApiModule {
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideForecastRepository(
+        forecastApi: ForecastApi,
+    ): ForecastRepository {
+        return ForecastRepository(
+            forecastApi = forecastApi,
+            dispatchers = Dispatchers.IO,
+        )
     }
 
     @Singleton

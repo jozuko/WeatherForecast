@@ -17,25 +17,25 @@ import javax.inject.Inject
 class GetForecastUseCaseImpl @Inject constructor(
     private val forecastRepository: ForecastRepository,
 ) : GetForecastUseCase {
-    override suspend fun invoke(office: Office): Flow<Future<Forecast>> {
+    override fun invoke(office: Office): Flow<Future<Forecast>> {
         return forecastRepository.getForecast(officeId = office.id).map { apiModelFuture ->
-                when (apiModelFuture) {
-                    is Future.Error -> {
-                        Future.Error(apiModelFuture.error)
-                    }
+            when (apiModelFuture) {
+                is Future.Error -> {
+                    Future.Error(apiModelFuture.error)
+                }
 
-                    is Future.Success -> {
-                        Future.Success(ForecastAdapter.adaptFromApi(apiModelFuture.value))
-                    }
+                is Future.Success -> {
+                    Future.Success(ForecastAdapter.adaptFromApi(apiModelFuture.value))
+                }
 
-                    is Future.Proceeding -> {
-                        Future.Proceeding
-                    }
+                is Future.Proceeding -> {
+                    Future.Proceeding
+                }
 
-                    else -> {
-                        Future.Idel
-                    }
+                else -> {
+                    Future.Idle
                 }
             }
+        }
     }
 }

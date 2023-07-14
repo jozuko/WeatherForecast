@@ -1,7 +1,7 @@
 package com.jozu.weatherforecast.infrastructure.repository.api
 
 import com.jozu.weatherforecast.domain.Future
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -15,7 +15,7 @@ import retrofit2.Response
  * Created by jozuko on 2023/07/06.
  * Copyright (c) 2023 Studio Jozu. All rights reserved.
  */
-inline fun <reified T : Any> apiFlow(crossinline call: suspend () -> Response<T>): Flow<Future<T>> =
+inline fun <reified T : Any> apiFlow(ioDispatcher: CoroutineDispatcher, crossinline call: suspend () -> Response<T>): Flow<Future<T>> =
     flow<Future<T>> {
         val response = call()
         if (response.isSuccessful) {
@@ -27,9 +27,9 @@ inline fun <reified T : Any> apiFlow(crossinline call: suspend () -> Response<T>
         emit(Future.Error(cause))
     }.onStart {
         emit(Future.Proceeding)
-    }.flowOn(Dispatchers.IO)
+    }.flowOn(ioDispatcher)
 
-inline fun <reified T : Any?> apiNullableFlow(crossinline call: suspend () -> Response<T?>): Flow<Future<T?>> =
+inline fun <reified T : Any?> apiNullableFlow(ioDispatcher: CoroutineDispatcher, crossinline call: suspend () -> Response<T?>): Flow<Future<T?>> =
     flow<Future<T?>> {
         val response = call()
         if (response.isSuccessful) {
@@ -41,5 +41,5 @@ inline fun <reified T : Any?> apiNullableFlow(crossinline call: suspend () -> Re
         emit(Future.Error(cause))
     }.onStart {
         emit(Future.Proceeding)
-    }.flowOn(Dispatchers.IO)
+    }.flowOn(ioDispatcher)
 

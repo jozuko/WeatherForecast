@@ -6,7 +6,7 @@ package com.jozu.weatherforecast.domain
  * Copyright (c) 2023 Studio Jozu. All rights reserved.
  */
 sealed class Future<out T> {
-    object Idel : Future<Nothing>()
+    object Idle : Future<Nothing>()
     object Proceeding : Future<Nothing>()
     data class Success<out T>(val value: T) : Future<T>()
     data class Error(val error: Throwable) : Future<Nothing>()

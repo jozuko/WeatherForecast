@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -36,13 +37,13 @@ fun ForecastScreen(
     viewModel: ForecastViewModel = hiltViewModel(),
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
-        val areaState = viewModel.areaFuture
+        val areaState = viewModel.areaFutureStateFlow.collectAsState().value
         val modifier = Modifier
             .padding(paddingValues = paddingValues)
             .fillMaxSize()
 
         when (areaState) {
-            is Future.Idel -> LoadingScreen(modifier)
+            is Future.Idle -> LoadingScreen(modifier)
             is Future.Proceeding -> LoadingScreen(modifier)
             is Future.Error -> ErrorScreen(modifier, viewModel)
             is Future.Success -> {
@@ -55,19 +56,23 @@ fun ForecastScreen(
 }
 
 @Composable
-fun LoadingScreen(modifier: Modifier) {
+private fun LoadingScreen(modifier: Modifier) {
     Box(
-        modifier = modifier, contentAlignment = Alignment.Center
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(
-            modifier = Modifier.size(60.dp), color = MaterialTheme.colorScheme.primary, strokeWidth = 10.dp
+            modifier = Modifier.size(60.dp),
+            color = MaterialTheme.colorScheme.primary,
+            strokeWidth = 10.dp,
         )
     }
 }
 
 @Composable
-fun ErrorScreen(
-    modifier: Modifier, viewModel: ForecastViewModel
+private fun ErrorScreen(
+    modifier: Modifier,
+    viewModel: ForecastViewModel,
 ) {
     Box(
         modifier = modifier, contentAlignment = Alignment.Center
@@ -77,7 +82,9 @@ fun ErrorScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Button(onClick = { viewModel.refreshArea() }) {
+            Button(onClick = {
+                viewModel.refreshArea()
+            }) {
                 Text("再読み込み")
             }
         }
@@ -85,7 +92,7 @@ fun ErrorScreen(
 }
 
 @Composable
-fun DataScreen(
+private fun DataScreen(
     modifier: Modifier,
     viewModel: ForecastViewModel,
 ) {
@@ -101,14 +108,14 @@ fun DataScreen(
                         viewModel.showCenterSelectDialog()
                     },
                 ) {
-                    Text(viewModel.center?.name ?: "未選択")
+                    Text(viewModel.center.value?.name ?: "未選択")
                 }
                 Button(
                     onClick = {
                         viewModel.showOfficeSelectDialog()
                     },
                 ) {
-                    Text(viewModel.office?.name ?: "未選択")
+                    Text(viewModel.office.value?.name ?: "未選択")
                 }
             }
 
@@ -122,18 +129,20 @@ fun DataScreen(
                 }
             }
 
-            when (val forecastState = viewModel.forecastFuture) {
+            when (val forecastState = viewModel.forecastFutureState.collectAsState().value) {
                 is Future.Error -> {
                     forecastState.error.localizedMessage?.let { Text(it) } ?: Text("天気予報の取得に失敗")
                 }
 
-                is Future.Idel -> {
+                is Future.Idle -> {
                     Text("検索を押してください")
                 }
 
                 is Future.Proceeding -> {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(60.dp), color = MaterialTheme.colorScheme.primary, strokeWidth = 10.dp
+                        modifier = Modifier.size(60.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 10.dp,
                     )
                 }
 
@@ -146,18 +155,18 @@ fun DataScreen(
 }
 
 @Composable
-fun CenterSelectDialog(
+private fun CenterSelectDialog(
     viewModel: ForecastViewModel,
     area: Area,
 ) {
-    if (viewModel.isShowCenterSelectDialog) {
+    if (viewModel.isShowCenterSelectDialog.value) {
         val centers = area.centers
 
         SingleSelectionSlideInDialog(
             title = "地方選択",
             labels = centers.map { it.name },
             selection = centers,
-            defaultSelectedIndex = centers.indexOfFirst { it == viewModel.center },
+            defaultSelectedIndex = centers.indexOfFirst { it == viewModel.center.value },
             onConfirmRequest = { center ->
                 viewModel.selectAreaCenter(center)
             },
@@ -169,17 +178,17 @@ fun CenterSelectDialog(
 }
 
 @Composable
-fun OfficeSelectDialog(
+private fun OfficeSelectDialog(
     viewModel: ForecastViewModel,
 ) {
-    if (viewModel.isShowOfficeSelectDialog) {
-        val offices = viewModel.center?.offices ?: return
+    if (viewModel.isShowOfficeSelectDialog.value) {
+        val offices = viewModel.center.value?.offices ?: return
 
         SingleSelectionDialog(
             title = "事務所選択",
             labels = offices.map { it.name },
             selection = offices,
-            defaultSelectedIndex = offices.indexOfFirst { it == viewModel.office },
+            defaultSelectedIndex = offices.indexOfFirst { it == viewModel.office.value },
             onConfirmRequest = { office ->
                 viewModel.selectAreaOffice(office)
                 viewModel.hideOfficeSelectDialog()
