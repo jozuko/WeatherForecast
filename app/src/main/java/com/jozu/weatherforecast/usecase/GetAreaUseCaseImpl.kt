@@ -16,24 +16,13 @@ import javax.inject.Inject
 class GetAreaUseCaseImpl @Inject constructor(
     private val forecastRepository: ForecastRepository,
 ) : GetAreaUseCase {
-    override suspend fun invoke(): Flow<Future<Area>> {
+    override fun invoke(): Flow<Future<Area>> {
         return forecastRepository.getArea().map { apiModelFuture ->
             when (apiModelFuture) {
-                is Future.Error -> {
-                    Future.Error(apiModelFuture.error)
-                }
-
-                is Future.Success -> {
-                    Future.Success(AreaAdapter.adaptFromApi(apiModelFuture.value))
-                }
-
-                is Future.Proceeding -> {
-                    Future.Proceeding
-                }
-
-                else -> {
-                    Future.Idle
-                }
+                is Future.Error -> Future.Error(apiModelFuture.error)
+                is Future.Success -> Future.Success(AreaAdapter.adaptFromApi(apiModelFuture.value))
+                is Future.Proceeding -> Future.Idle
+                is Future.Idle -> Future.Idle
             }
         }
     }

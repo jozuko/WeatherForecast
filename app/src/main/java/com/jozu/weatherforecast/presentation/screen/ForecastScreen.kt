@@ -37,19 +37,19 @@ fun ForecastScreen(
     viewModel: ForecastViewModel = hiltViewModel(),
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
-        val areaState = viewModel.areaFutureStateFlow.collectAsState().value
+        val uiState = viewModel.forecastUiStateStateFlow.collectAsState().value
         val modifier = Modifier
             .padding(paddingValues = paddingValues)
             .fillMaxSize()
 
-        when (areaState) {
+        when (uiState.areaFuture) {
             is Future.Idle -> LoadingScreen(modifier)
             is Future.Proceeding -> LoadingScreen(modifier)
             is Future.Error -> ErrorScreen(modifier, viewModel)
             is Future.Success -> {
-                DataScreen(modifier, viewModel)
-                CenterSelectDialog(viewModel, areaState.value)
-                OfficeSelectDialog(viewModel)
+                DataScreen(modifier, viewModel, uiState)
+                CenterSelectDialog(viewModel, uiState, uiState.areaFuture.value)
+                OfficeSelectDialog(viewModel, uiState)
             }
         }
     }
@@ -95,6 +95,7 @@ private fun ErrorScreen(
 private fun DataScreen(
     modifier: Modifier,
     viewModel: ForecastViewModel,
+    uiState: ForecastUiState,
 ) {
     Box(
         modifier = modifier
@@ -108,14 +109,14 @@ private fun DataScreen(
                         viewModel.showCenterSelectDialog()
                     },
                 ) {
-                    Text(viewModel.center.value?.name ?: "未選択")
+                    Text(uiState.center?.name ?: "未選択")
                 }
                 Button(
                     onClick = {
                         viewModel.showOfficeSelectDialog()
                     },
                 ) {
-                    Text(viewModel.office.value?.name ?: "未選択")
+                    Text(uiState.office?.name ?: "未選択")
                 }
             }
 
@@ -157,6 +158,7 @@ private fun DataScreen(
 @Composable
 private fun CenterSelectDialog(
     viewModel: ForecastViewModel,
+    uiState: ForecastUiState,
     area: Area,
 ) {
     if (viewModel.isShowCenterSelectDialog.value) {
@@ -166,7 +168,7 @@ private fun CenterSelectDialog(
             title = "地方選択",
             labels = centers.map { it.name },
             selection = centers,
-            defaultSelectedIndex = centers.indexOfFirst { it == viewModel.center.value },
+            defaultSelectedIndex = centers.indexOfFirst { it == uiState.center },
             onConfirmRequest = { center ->
                 viewModel.selectAreaCenter(center)
             },
@@ -180,15 +182,16 @@ private fun CenterSelectDialog(
 @Composable
 private fun OfficeSelectDialog(
     viewModel: ForecastViewModel,
+    uiState: ForecastUiState,
 ) {
     if (viewModel.isShowOfficeSelectDialog.value) {
-        val offices = viewModel.center.value?.offices ?: return
+        val offices = uiState.center?.offices ?: return
 
         SingleSelectionDialog(
             title = "事務所選択",
             labels = offices.map { it.name },
             selection = offices,
-            defaultSelectedIndex = offices.indexOfFirst { it == viewModel.office.value },
+            defaultSelectedIndex = offices.indexOfFirst { it == uiState.office },
             onConfirmRequest = { office ->
                 viewModel.selectAreaOffice(office)
                 viewModel.hideOfficeSelectDialog()

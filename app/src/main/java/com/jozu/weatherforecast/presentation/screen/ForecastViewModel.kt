@@ -6,7 +6,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jozu.weatherforecast.domain.Area
 import com.jozu.weatherforecast.domain.Center
 import com.jozu.weatherforecast.domain.Forecast
 import com.jozu.weatherforecast.domain.Future
@@ -15,8 +14,11 @@ import com.jozu.weatherforecast.usecase.GetAreaUseCase
 import com.jozu.weatherforecast.usecase.GetForecastUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,17 +37,17 @@ class ForecastViewModel @Inject constructor(
     private val getAreaUseCase: GetAreaUseCase,
     private val getForecastUseCase: GetForecastUseCase,
 ) : ViewModel() {
-    private var _areaFutureState: MutableStateFlow<Future<Area>> = MutableStateFlow(Future.Idle)
-    val areaFutureStateFlow: StateFlow<Future<Area>> = _areaFutureState.asStateFlow()
+    private val _areaFutureStateFlow: MutableStateFlow<ForecastViewModelState> = MutableStateFlow(ForecastViewModelState())
+    val forecastUiStateStateFlow: StateFlow<ForecastUiState> = _areaFutureStateFlow
+        .map { it.toUiState() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = _areaFutureStateFlow.value.toUiState(),
+        )
 
     private var _forecastFutureState: MutableStateFlow<Future<Forecast>> = MutableStateFlow(Future.Idle)
     val forecastFutureState: StateFlow<Future<Forecast>> = _forecastFutureState.asStateFlow()
-
-    private var _center: MutableState<Center?> = mutableStateOf(null)
-    val center: State<Center?> = _center
-
-    private var _office: MutableState<Office?> = mutableStateOf(null)
-    val office: State<Office?> = _office
 
     private var _isShowCenterSelectDialog: MutableState<Boolean> = mutableStateOf(false)
     val isShowCenterSelectDialog: State<Boolean> = _isShowCenterSelectDialog
@@ -58,36 +60,34 @@ class ForecastViewModel @Inject constructor(
     }
 
     fun refreshArea() {
+        _areaFutureStateFlow.value = ForecastViewModelState(areaFuture = Future.Proceeding)
+
         viewModelScope.launch {
-            suspendRefreshArea()
-        }
-    }
-
-    private suspend fun suspendRefreshArea() {
-        _areaFutureState.emit(Future.Proceeding)
-
-        getAreaUseCase().collect {
-            _areaFutureState.emit(it)
-            if (it is Future.Success) {
-                _center.value = it.value.centers.firstOrNull()
-                _office.value = _center.value?.offices?.firstOrNull()
+            getAreaUseCase().collect {
+                _areaFutureStateFlow.value = ForecastViewModelState(areaFuture = it)
             }
         }
     }
 
     fun selectAreaCenter(selected: Center) {
-        if (_center.value != selected) {
-            val areaData: Future<Area> = _areaFutureState.value
-            if (areaData is Future.Success) {
-                _center.value = selected
-                _office.value = _center.value?.offices?.firstOrNull()
-            }
+        val uiState = forecastUiStateStateFlow.value
+        if (uiState.center != selected) {
+            _areaFutureStateFlow.value = ForecastViewModelState(
+                areaFuture = uiState.areaFuture,
+                center = selected,
+                office = selected.offices.firstOrNull(),
+            )
         }
     }
 
     fun selectAreaOffice(selected: Office) {
-        if (_office.value != selected) {
-            _office.value = selected
+        val uiState = forecastUiStateStateFlow.value
+        if (uiState.office != selected) {
+            _areaFutureStateFlow.value = ForecastViewModelState(
+                areaFuture = uiState.areaFuture,
+                center = uiState.center,
+                office = selected,
+            )
         }
     }
 
@@ -115,7 +115,7 @@ class ForecastViewModel @Inject constructor(
 
     private suspend fun suspendSearchForecast() {
         _forecastFutureState.emit(Future.Idle)
-        val office = _office.value ?: return
+        val office = _areaFutureStateFlow.value.office ?: return
 
         _forecastFutureState.emit(Future.Proceeding)
 
