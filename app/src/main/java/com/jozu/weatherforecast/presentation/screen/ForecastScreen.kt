@@ -1,6 +1,5 @@
 package com.jozu.weatherforecast.presentation.screen
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,20 +29,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import coil.decode.SvgDecoder
-import coil.request.ImageRequest
 import com.jozu.weatherforecast.domain.Area
 import com.jozu.weatherforecast.domain.Forecast
 import com.jozu.weatherforecast.domain.Future
+import com.jozu.weatherforecast.presentation.compose.ForecastOverviewBox
 import com.jozu.weatherforecast.presentation.dialog.SingleSelectionDialog
 import com.jozu.weatherforecast.presentation.dialog.SingleSelectionSlideInDialog
+import kotlinx.coroutines.launch
 
 /**
  * 天気予報を検索・表示する画面
@@ -237,31 +237,48 @@ private fun OfficeSelectDialog(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ForecastPager(forecast: Forecast) {
-    val pageState = rememberPagerState()
+    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState()
+    val pageCount = forecast.areaOverviews.count()
 
-    HorizontalPager(
-        pageCount = forecast.areaOverviews.count(),
-        state = pageState,
-    ) { page ->
-        val areaOverview = forecast.areaOverviews[page]
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column {
-                Text(
-                    text = areaOverview.areaName,
-                )
-                val weatherCodeUrl = "https://www.jma.go.jp/bosai/forecast/img/${areaOverview.overviews[page].weatherCode.image}"
-                Log.d("weatherCodeUrl", weatherCodeUrl)
-                AsyncImage(
-                    modifier = Modifier.size(200.dp, 200.dp),
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(weatherCodeUrl)
-                        .decoderFactory(SvgDecoder.Factory())
-                        .build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                )
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        items(pageCount) { page ->
+            val buttonColors = if (pagerState.currentPage == page) {
+                ButtonDefaults.filledTonalButtonColors()
+            } else {
+                ButtonDefaults.outlinedButtonColors()
+            }
+
+            Button(
+                modifier = Modifier.padding(4.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                colors = buttonColors,
+                shape = RoundedCornerShape(percent = 10),
+                onClick = {
+                    if (pagerState.currentPage != page) {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(page)
+                        }
+                    }
+                },
+            ) {
+                Text(forecast.areaOverviews[page].areaName)
             }
         }
     }
 
+    HorizontalPager(
+        pageCount = pageCount,
+        state = pagerState,
+    ) { page ->
+        val areaOverview = forecast.areaOverviews[page]
+        LazyColumn {
+            items(items = areaOverview.overviews) { forecastOverview ->
+                ForecastOverviewBox(forecastOverview)
+            }
+        }
+    }
 }

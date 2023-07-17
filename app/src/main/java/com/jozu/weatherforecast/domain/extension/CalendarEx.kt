@@ -25,4 +25,9 @@ object CalendarEx {
             null
         }
     }
+
+    fun Calendar.format(format: String): String {
+        val dateFormat = SimpleDateFormat(format, Locale.getDefault())
+        return dateFormat.format(this.time)
+    }
 }
