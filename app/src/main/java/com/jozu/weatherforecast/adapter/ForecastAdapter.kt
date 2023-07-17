@@ -1,9 +1,12 @@
 package com.jozu.weatherforecast.adapter
 
 import com.jozu.weatherforecast.domain.AreaForecast
+import com.jozu.weatherforecast.domain.AreaOverview
 import com.jozu.weatherforecast.domain.Forecast
 import com.jozu.weatherforecast.domain.ForecastDataType
+import com.jozu.weatherforecast.domain.ForecastOverview
 import com.jozu.weatherforecast.domain.TimeData
+import com.jozu.weatherforecast.domain.WeatherCode
 import com.jozu.weatherforecast.domain.extension.CalendarEx
 import com.jozu.weatherforecast.domain.repository.ForecastApiModel
 import com.jozu.weatherforecast.domain.repository.ForecastAreaApiModel
@@ -22,15 +25,51 @@ object ForecastAdapter {
         return Forecast(
             publishingOffice = firstApiModel?.publishingOffice ?: "",
             reportDatetime = firstApiModel?.reportDatetime?.let { CalendarEx.parse(ForecastApiModel.TIME_FORMAT, it) },
-            weatherCodeList = getAreaForecastList(ForecastDataType.WEATHER_CODE, timeSeriesList),
-            weatherList = getAreaForecastList(ForecastDataType.WEATHER, timeSeriesList),
-            windList = getAreaForecastList(ForecastDataType.WIND, timeSeriesList),
+            areaOverviews = getAreaOverview(timeSeriesList),
             rainyPercentList = getAreaForecastList(ForecastDataType.RAINY, timeSeriesList),
             temperatureList = getAreaForecastList(ForecastDataType.TEMPERATURE, timeSeriesList),
             weekWeatherList = getAreaForecastList(ForecastDataType.WEEK_WEATHER, timeSeriesList),
             weekRainyList = getAreaForecastList(ForecastDataType.WEEK_RAINY, timeSeriesList),
             weekTemperatureList = getAreaForecastList(ForecastDataType.WEEK_TEMPERATURE, timeSeriesList),
         )
+    }
+
+    private fun getAreaOverview(timeSeriesList: List<TimeSeriesApiModel>): List<AreaOverview> {
+        val timeSeries = timeSeriesList.firstOrNull { timeSeries ->
+            if (timeSeries.timeDefines.isNullOrEmpty()) {
+                return@firstOrNull false
+            }
+
+            val timeDefinesCount = timeSeries.timeDefines.count()
+            timeSeries.forecastAreas?.find {
+                if (it.weatherCodes.isNullOrEmpty() || it.weatherCodes.count() != timeDefinesCount) {
+                    return@find false
+                }
+                if (it.weathers.isNullOrEmpty() || it.weathers.count() != timeDefinesCount) {
+                    return@find false
+                }
+                if (it.winds.isNullOrEmpty() || it.winds.count() != timeDefinesCount) {
+                    return@find false
+                }
+                return@find true
+            } != null
+        } ?: return emptyList()
+
+        val timeList = timeSeries.timeDefines!!.map { CalendarEx.parse(ForecastApiModel.TIME_FORMAT, it) }
+        return timeSeries.forecastAreas!!.map { forecastArea ->
+            AreaOverview(
+                areaName = forecastArea.area?.name ?: "",
+                areaCode = forecastArea.area?.code ?: "",
+                overviews = (0 until timeList.count()).map { index ->
+                    ForecastOverview(
+                        time = timeList[index]!!,
+                        weatherCode = WeatherCode.get(forecastArea.weatherCodes?.get(index)),
+                        weather = forecastArea.weathers?.get(index) ?: "",
+                        wind = forecastArea.winds?.get(index) ?: "",
+                    )
+                },
+            )
+        }
     }
 
     private fun getAreaForecastList(forecastDataType: ForecastDataType, timeSeriesList: List<TimeSeriesApiModel>): List<AreaForecast> {
@@ -50,9 +89,6 @@ object ForecastAdapter {
         val timeDefines = targetSeries.timeDefines?.map { CalendarEx.parse(ForecastApiModel.TIME_FORMAT, it) } ?: emptyList()
 
         val dataList = when (forecastDataType) {
-            ForecastDataType.WEATHER_CODE -> areaApiModel.weatherCodes
-            ForecastDataType.WEATHER -> areaApiModel.weathers
-            ForecastDataType.WIND -> areaApiModel.winds
             ForecastDataType.RAINY -> areaApiModel.pops
             ForecastDataType.TEMPERATURE -> areaApiModel.temps
             ForecastDataType.WEEK_WEATHER -> areaApiModel.weatherCodes
@@ -71,12 +107,6 @@ object ForecastAdapter {
 
     private fun getTimeSeries(forecastDataType: ForecastDataType, timeSeriesList: List<TimeSeriesApiModel>): TimeSeriesApiModel? {
         return when (forecastDataType) {
-            ForecastDataType.WEATHER_CODE, ForecastDataType.WEATHER, ForecastDataType.WIND -> {
-                timeSeriesList.firstOrNull { timeSeries ->
-                    timeSeries.forecastAreas?.find { !it.weatherCodes.isNullOrEmpty() && it.reliabilities.isNullOrEmpty() } != null
-                }
-            }
-
             ForecastDataType.RAINY -> {
                 timeSeriesList.firstOrNull { timeSeries ->
                     timeSeries.forecastAreas?.find { !it.pops.isNullOrEmpty() && it.reliabilities.isNullOrEmpty() } != null

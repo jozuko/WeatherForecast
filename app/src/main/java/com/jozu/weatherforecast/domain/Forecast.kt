@@ -10,9 +10,7 @@ import java.util.Calendar
 data class Forecast(
     val publishingOffice: String,
     val reportDatetime: Calendar?,
-    val weatherCodeList: List<AreaForecast>,
-    val weatherList: List<AreaForecast>,
-    val windList: List<AreaForecast>,
+    val areaOverviews: List<AreaOverview>,
     val rainyPercentList: List<AreaForecast>,
     val temperatureList: List<AreaForecast>,
     val weekWeatherList: List<AreaForecast>,
@@ -21,7 +19,7 @@ data class Forecast(
 )
 
 enum class ForecastDataType {
-    WEATHER_CODE, WEATHER, WIND, RAINY, TEMPERATURE, WEEK_WEATHER, WEEK_RAINY, WEEK_TEMPERATURE,
+    RAINY, TEMPERATURE, WEEK_WEATHER, WEEK_RAINY, WEEK_TEMPERATURE,
 }
 
 data class AreaForecast(
@@ -34,4 +32,17 @@ data class AreaForecast(
 data class TimeData(
     val time: Calendar,
     val data: String,
+)
+
+data class AreaOverview(
+    val areaName: String,
+    val areaCode: String,
+    val overviews: List<ForecastOverview>,
+)
+
+data class ForecastOverview(
+    val time: Calendar,
+    val weatherCode: WeatherCode,
+    val weather: String,
+    val wind: String,
 )

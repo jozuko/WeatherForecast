@@ -1,5 +1,6 @@
 package com.jozu.weatherforecast.di.module
 
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.jozu.weatherforecast.infrastructure.repository.ForecastRepository
@@ -14,6 +15,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -48,6 +50,13 @@ object ApiModule {
             .connectTimeout(120, TimeUnit.SECONDS)
             .readTimeout(120, TimeUnit.SECONDS)
             .writeTimeout(120, TimeUnit.SECONDS)
+            .addInterceptor(
+                HttpLoggingInterceptor { message ->
+                    Log.d("Forecast-API", message)
+                }.apply {
+                    level = HttpLoggingInterceptor.Level.BASIC
+                },
+            )
             .build()
     }
 
