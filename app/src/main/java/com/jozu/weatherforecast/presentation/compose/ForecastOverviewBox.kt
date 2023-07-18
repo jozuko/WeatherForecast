@@ -105,20 +105,22 @@ private fun WeatherCodeImage(modifier: Modifier = Modifier, weatherCode: Weather
 
 @Composable
 private fun WeatherDesc(modifier: Modifier = Modifier, weather: String) {
-    AuthSizeText(
+    AutoSizeText(
         text = weather,
-        maxTextSize = MaterialTheme.typography.bodyMedium.fontSize,
-        minTextSize = MaterialTheme.typography.bodySmall.fontSize,
+        autoSizeMaxTextSize = MaterialTheme.typography.bodyMedium.fontSize.value,
+        autoSizeMinTextSize = MaterialTheme.typography.bodySmall.fontSize.value,
+        maxLines = 1,
         modifier = modifier,
     )
 }
 
 @Composable
 private fun WindDesc(modifier: Modifier = Modifier, wind: String) {
-    AuthSizeText(
+    AutoSizeText(
         text = wind,
-        maxTextSize = MaterialTheme.typography.bodyMedium.fontSize,
-        minTextSize = MaterialTheme.typography.bodySmall.fontSize,
+        autoSizeMaxTextSize = MaterialTheme.typography.bodyMedium.fontSize.value,
+        autoSizeMinTextSize = MaterialTheme.typography.bodySmall.fontSize.value,
+        maxLines = 1,
         modifier = modifier,
     )
 }
