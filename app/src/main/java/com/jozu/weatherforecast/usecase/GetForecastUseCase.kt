@@ -16,6 +16,6 @@ class GetForecastUseCase @Inject constructor(
     private val forecastRepository: ForecastRepository,
 ) {
     operator fun invoke(office: Office): Flow<Future<Forecast>> {
-        return forecastRepository.getForecast(officeId = office.id)
+        return forecastRepository.getForecast(officeId = office.code)
     }
 }

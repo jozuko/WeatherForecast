@@ -61,7 +61,8 @@ class ForecastViewModel @Inject constructor(
     fun refreshArea() {
         viewModelScope.launch {
             _areaFutureStateFlow.value = Future.Proceeding
-            getAreaUseCase.invoke().collectLatest {
+            getAreaUseCase.invoke().collect {
+                Log.d("ForecastViewModel", "collect $it")
                 _areaFutureStateFlow.value = it
                 if (it is Future.Success) {
                     _center.value = it.value.centers.firstOrNull()

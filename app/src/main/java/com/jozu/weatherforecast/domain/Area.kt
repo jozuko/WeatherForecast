@@ -10,12 +10,12 @@ data class Area(
 )
 
 data class Center(
-    val id: String,
+    val code: String,
     val name: String,
     val offices: List<Office>,
 )
 
 data class Office(
-    val id: String,
+    val code: String,
     val name: String,
 )

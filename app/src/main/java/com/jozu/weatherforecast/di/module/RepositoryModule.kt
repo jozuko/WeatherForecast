@@ -3,6 +3,9 @@ package com.jozu.weatherforecast.di.module
 import com.jozu.weatherforecast.domain.AreaRepository
 import com.jozu.weatherforecast.domain.ForecastRepository
 import com.jozu.weatherforecast.infrastructure.api.ForecastApi
+import com.jozu.weatherforecast.infrastructure.db.AppDatabase
+import com.jozu.weatherforecast.infrastructure.db.AreaDao
+import com.jozu.weatherforecast.infrastructure.pref.SharedPref
 import com.jozu.weatherforecast.infrastructure.repository.AreaRepositoryImpl
 import com.jozu.weatherforecast.infrastructure.repository.ForecastRepositoryImpl
 import dagger.Module
@@ -24,9 +27,15 @@ object RepositoryModule {
     @Provides
     fun provideAreaRepository(
         forecastApi: ForecastApi,
+        db: AppDatabase,
+        areaDao: AreaDao,
+        sharedPref: SharedPref,
     ): AreaRepository {
         return AreaRepositoryImpl(
             forecastApi = forecastApi,
+            db = db,
+            areaDao = areaDao,
+            sharedPref = sharedPref,
             dispatchers = Dispatchers.IO,
         )
     }
