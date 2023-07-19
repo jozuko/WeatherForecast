@@ -1,9 +1,9 @@
-package com.jozu.weatherforecast.adapter
+package com.jozu.weatherforecast.domain.adapter
 
 import com.jozu.weatherforecast.domain.Area
 import com.jozu.weatherforecast.domain.Center
 import com.jozu.weatherforecast.domain.Office
-import com.jozu.weatherforecast.domain.repository.AreaApiModel
+import com.jozu.weatherforecast.infrastructure.api.model.AreaApiModel
 
 /**
  *

@@ -1,4 +1,4 @@
-package com.jozu.weatherforecast.domain.repository
+package com.jozu.weatherforecast.infrastructure.api.model
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -17,7 +17,7 @@ import java.io.InputStreamReader
  */
 @Suppress("LocalVariableName")
 @RunWith(AndroidJUnit4::class)
-class ForecastTest {
+class ForecastApiModelTest {
     @Test
     fun readJson() {
         val androidTestContext = InstrumentationRegistry.getInstrumentation().context

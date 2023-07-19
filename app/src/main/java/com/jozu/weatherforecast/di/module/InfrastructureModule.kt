@@ -3,17 +3,11 @@ package com.jozu.weatherforecast.di.module
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.jozu.weatherforecast.infrastructure.repository.ForecastRepository
-import com.jozu.weatherforecast.infrastructure.repository.api.ForecastApi
-import com.jozu.weatherforecast.usecase.GetAreaUseCase
-import com.jozu.weatherforecast.usecase.GetAreaUseCaseImpl
-import com.jozu.weatherforecast.usecase.GetForecastUseCase
-import com.jozu.weatherforecast.usecase.GetForecastUseCaseImpl
+import com.jozu.weatherforecast.infrastructure.api.ForecastApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -28,15 +22,7 @@ import javax.inject.Singleton
  */
 @Module
 @InstallIn(SingletonComponent::class)
-object ApiModule {
-    @Singleton
-    @Provides
-    fun provideForecastApi(
-        retrofit: Retrofit,
-    ): ForecastApi {
-        return retrofit.create(ForecastApi::class.java)
-    }
-
+object InfrastructureModule {
     @Singleton
     @Provides
     fun provideGson(): Gson {
@@ -75,24 +61,9 @@ object ApiModule {
 
     @Singleton
     @Provides
-    fun provideForecastRepository(
-        forecastApi: ForecastApi,
-    ): ForecastRepository {
-        return ForecastRepository(
-            forecastApi = forecastApi,
-            dispatchers = Dispatchers.IO,
-        )
+    fun provideForecastApi(
+        retrofit: Retrofit,
+    ): ForecastApi {
+        return retrofit.create(ForecastApi::class.java)
     }
-
-    @Singleton
-    @Provides
-    fun provideGetAreaUseCase(
-        forecastRepository: ForecastRepository,
-    ): GetAreaUseCase = GetAreaUseCaseImpl(forecastRepository)
-
-    @Singleton
-    @Provides
-    fun provideGetForecastUseCase(
-        forecastRepository: ForecastRepository,
-    ): GetForecastUseCase = GetForecastUseCaseImpl(forecastRepository)
 }

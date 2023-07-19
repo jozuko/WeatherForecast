@@ -1,7 +1,7 @@
-package com.jozu.weatherforecast.infrastructure.repository.api
+package com.jozu.weatherforecast.infrastructure.api
 
-import com.jozu.weatherforecast.domain.repository.AreaApiModel
-import com.jozu.weatherforecast.domain.repository.ForecastApiModel
+import com.jozu.weatherforecast.infrastructure.api.model.AreaApiModel
+import com.jozu.weatherforecast.infrastructure.api.model.ForecastApiModel
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path

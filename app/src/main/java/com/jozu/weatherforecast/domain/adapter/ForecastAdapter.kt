@@ -1,4 +1,4 @@
-package com.jozu.weatherforecast.adapter
+package com.jozu.weatherforecast.domain.adapter
 
 import com.jozu.weatherforecast.domain.AreaForecast
 import com.jozu.weatherforecast.domain.AreaOverview
@@ -8,9 +8,9 @@ import com.jozu.weatherforecast.domain.ForecastOverview
 import com.jozu.weatherforecast.domain.TimeData
 import com.jozu.weatherforecast.domain.WeatherCode
 import com.jozu.weatherforecast.domain.extension.CalendarEx
-import com.jozu.weatherforecast.domain.repository.ForecastApiModel
-import com.jozu.weatherforecast.domain.repository.ForecastAreaApiModel
-import com.jozu.weatherforecast.domain.repository.TimeSeriesApiModel
+import com.jozu.weatherforecast.infrastructure.api.model.ForecastApiModel
+import com.jozu.weatherforecast.infrastructure.api.model.ForecastAreaApiModel
+import com.jozu.weatherforecast.infrastructure.api.model.TimeSeriesApiModel
 
 /**
  *

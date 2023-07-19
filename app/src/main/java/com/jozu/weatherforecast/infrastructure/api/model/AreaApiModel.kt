@@ -1,4 +1,4 @@
-package com.jozu.weatherforecast.domain.repository
+package com.jozu.weatherforecast.infrastructure.api.model
 
 /**
  * 天気予報地点情報

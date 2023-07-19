@@ -1,4 +1,4 @@
-package com.jozu.weatherforecast.infrastructure.repository.api
+package com.jozu.weatherforecast.infrastructure.api
 
 import com.jozu.weatherforecast.domain.Future
 import kotlinx.coroutines.CoroutineDispatcher
