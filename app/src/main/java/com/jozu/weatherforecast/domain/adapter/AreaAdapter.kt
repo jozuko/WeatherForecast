@@ -36,7 +36,12 @@ object AreaAdapter {
                 Center(
                     code = centerEntity.code,
                     name = centerEntity.name,
-                    offices = officeEntityList.map { officeEntity -> Office(code = officeEntity.code, name = officeEntity.name) }
+                    offices = officeEntityList.map { officeEntity ->
+                        Office(
+                            code = officeEntity.code,
+                            name = officeEntity.name,
+                        )
+                    }
                 )
             },
         )

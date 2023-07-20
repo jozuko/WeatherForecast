@@ -1,6 +1,5 @@
 package com.jozu.weatherforecast.infrastructure.repository
 
-import android.util.Log
 import androidx.room.withTransaction
 import com.jozu.weatherforecast.domain.Area
 import com.jozu.weatherforecast.domain.AreaRepository
@@ -20,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -50,46 +50,45 @@ class AreaRepositoryImpl @Inject constructor(
             }
         }.onStart {
             emit(Future.Proceeding)
+        }.catch { cause ->
+            emit(Future.Error(cause))
         }.flowOn(dispatchers)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun getAreaFromServer(): Flow<Future<Area>> {
         return apiFlow(dispatchers) {
-            Log.d("AreaRepository", "getAreaFromServer")
             forecastApi.getArea()
         }.map { apiModelFuture ->
             when (apiModelFuture) {
                 is Future.Error -> Future.Error(apiModelFuture.error)
                 is Future.Success -> Future.Success(AreaAdapter.adaptFromApi(apiModelFuture.value))
-                is Future.Proceeding -> Future.Idle
-                is Future.Idle -> Future.Idle
+                is Future.Proceeding -> Future.Proceeding
+                is Future.Idle -> Future.Proceeding
             }
         }.flatMapConcat { areaFuture ->
             if (areaFuture is Future.Success) {
                 saveArea(areaFuture.value)
             } else {
-                flow { emit(areaFuture) }
+                flowOf(areaFuture)
             }
-        }.flowOn(dispatchers)
+        }.catch { cause ->
+            emit(Future.Error(cause))
+        }
     }
 
     private fun getAreaFromLocal(): Flow<Future<Area>> {
         return flow<Future<Area>> {
-            Log.d("AreaRepository", "getAreaFromLocal")
-
             val areaMap = areaDao.getAll()
             val area = AreaAdapter.adaptFromDb(areaMap)
             emit(Future.Success(area))
         }.catch { cause ->
             emit(Future.Error(cause))
-        }.flowOn(dispatchers)
+        }
     }
 
     private fun saveArea(area: Area): Flow<Future<Area>> {
         return flow<Future<Area>> {
-            Log.d("AreaRepository", "saveArea")
-
             db.withTransaction {
                 areaDao.deleteAllCenter()
                 areaDao.deleteAllOffice()
@@ -109,6 +108,6 @@ class AreaRepositoryImpl @Inject constructor(
             emit(Future.Success(area))
         }.catch { cause ->
             emit(Future.Error(cause))
-        }.flowOn(dispatchers)
+        }
     }
 }
