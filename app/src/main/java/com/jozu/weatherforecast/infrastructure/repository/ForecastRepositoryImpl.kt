@@ -9,13 +9,14 @@ import com.jozu.weatherforecast.infrastructure.api.apiFlow
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
 /**
  *
  * Created by jozuko on 2023/07/06.
  * Copyright (c) 2023 Studio Jozu. All rights reserved.
  */
-class ForecastRepositoryImpl constructor(
+class ForecastRepositoryImpl @Inject constructor(
     private val forecastApi: ForecastApi,
     private val dispatchers: CoroutineDispatcher,
 ) : ForecastRepository {
