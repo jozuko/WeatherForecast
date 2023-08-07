@@ -1,68 +1,75 @@
 package com.jozu.weatherforecast.infrastructure.api.model
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  *
  * Created by jozuko on 2023/07/11.
  * Copyright (c) 2023 Studio Jozu. All rights reserved.
  */
+@Serializable
 data class ForecastApiModel(
     /** 気象台名 */
-    @SerializedName("publishingOffice") val publishingOffice: String?,
+    @SerialName("publishingOffice") val publishingOffice: String?,
 
     /** 発表時刻 */
-    @SerializedName("reportDatetime") val reportDatetime: String?,
+    @SerialName("reportDatetime") val reportDatetime: String?,
 
-    @SerializedName("timeSeries") val timeSeriesList: List<TimeSeriesApiModel>?,
-
-    /** 降水量の７日間合計 */
-    @SerializedName("tempAverage") val tempAverage: AverageApiModel?,
+    @SerialName("timeSeries") val timeSeriesList: List<TimeSeriesApiModel>?,
 
     /** 降水量の７日間合計 */
-    @SerializedName("precipAverage") val precipAverage: AverageApiModel?,
+    @SerialName("tempAverage") val tempAverage: AverageApiModel?,
+
+    /** 降水量の７日間合計 */
+    @SerialName("precipAverage") val precipAverage: AverageApiModel?,
 ) {
     companion object {
         const val TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"
     }
 }
 
+@Serializable
 data class TimeSeriesApiModel(
-    @SerializedName("timeDefines") val timeDefines: List<String>?,
+    @SerialName("timeDefines") val timeDefines: List<String>?,
 
-    @SerializedName("areas") val forecastAreas: List<ForecastAreaApiModel>?,
+    @SerialName("areas") val forecastAreas: List<ForecastAreaApiModel>?,
 )
 
+@Serializable
 data class AverageApiModel(
-    @SerializedName("areas") val averageAreas: List<AverageAreaApiModel>?,
+    @SerialName("areas") val averageAreas: List<AverageAreaApiModel>?,
 )
 
+@Serializable
 data class ForecastAreaApiModel(
-    @SerializedName("area") val area: AreaDataApiModel?,
-    @SerializedName("weatherCodes") val weatherCodes: List<String>?,
-    @SerializedName("weathers") val weathers: List<String>?,
-    @SerializedName("winds") val winds: List<String>?,
+    @SerialName("area") val area: AreaDataApiModel?,
+    @SerialName("weatherCodes") val weatherCodes: List<String>?,
+    @SerialName("weathers") val weathers: List<String>?,
+    @SerialName("winds") val winds: List<String>?,
     /** 降水確率 */
-    @SerializedName("pops") val pops: List<String>?,
+    @SerialName("pops") val pops: List<String>?,
     /** 気温 */
-    @SerializedName("temps") val temps: List<String>?,
+    @SerialName("temps") val temps: List<String>?,
     /** 信頼度 */
-    @SerializedName("reliabilities") val reliabilities: List<String>?,
-    @SerializedName("tempsMin") val tempsMin: List<String>?,
-    @SerializedName("tempsMinUpper") val tempsMinUpper: List<String>?,
-    @SerializedName("tempsMinLower") val tempsMinLower: List<String>?,
-    @SerializedName("tempsMax") val tempsMax: List<String>?,
-    @SerializedName("tempsMaxUpper") val tempsMaxUpper: List<String>?,
-    @SerializedName("tempsMaxLower") val tempsMaxLower: List<String>?,
+    @SerialName("reliabilities") val reliabilities: List<String>?,
+    @SerialName("tempsMin") val tempsMin: List<String>?,
+    @SerialName("tempsMinUpper") val tempsMinUpper: List<String>?,
+    @SerialName("tempsMinLower") val tempsMinLower: List<String>?,
+    @SerialName("tempsMax") val tempsMax: List<String>?,
+    @SerialName("tempsMaxUpper") val tempsMaxUpper: List<String>?,
+    @SerialName("tempsMaxLower") val tempsMaxLower: List<String>?,
 )
 
+@Serializable
 data class AreaDataApiModel(
-    @SerializedName("name") val name: String?,
-    @SerializedName("code") val code: String?,
+    @SerialName("name") val name: String?,
+    @SerialName("code") val code: String?,
 )
 
+@Serializable
 data class AverageAreaApiModel(
-    @SerializedName("area") val area: AreaDataApiModel?,
-    @SerializedName("min") val min: String?,
-    @SerializedName("max") val max: String?,
+    @SerialName("area") val area: AreaDataApiModel?,
+    @SerialName("min") val min: String?,
+    @SerialName("max") val max: String?,
 )

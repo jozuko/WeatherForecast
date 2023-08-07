@@ -3,8 +3,7 @@ package com.jozu.weatherforecast.di.module
 import android.content.Context
 import android.util.Log
 import androidx.room.Room
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.jozu.weatherforecast.infrastructure.api.ForecastApi
 import com.jozu.weatherforecast.infrastructure.db.AppDatabase
 import com.jozu.weatherforecast.infrastructure.db.AreaDao
@@ -14,10 +13,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -29,31 +30,45 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object InfrastructureModule {
-    @Singleton
+    @OptIn(ExperimentalSerializationApi::class)
     @Provides
-    fun provideGson(): Gson {
-        return GsonBuilder().create()
+    fun provideKotlinSerializer(): Json {
+        return Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+        }
     }
 
     @Singleton
     @Provides
     fun provideHttpClient(): OkHttpClient {
-        return OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS).writeTimeout(120, TimeUnit.SECONDS).addInterceptor(
-            HttpLoggingInterceptor { message ->
-                Log.d("Forecast-API", message)
-            }.apply {
-                level = HttpLoggingInterceptor.Level.BASIC
-            },
-        ).build()
+        return OkHttpClient
+            .Builder()
+            .connectTimeout(120, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .writeTimeout(120, TimeUnit.SECONDS)
+            .addInterceptor(
+                HttpLoggingInterceptor { message ->
+                    Log.d("Forecast-API", message)
+                }.apply {
+                    level = HttpLoggingInterceptor.Level.BASIC
+                },
+            ).build()
     }
 
     @Singleton
     @Provides
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        gson: Gson,
+        kotlinSerializer: Json,
     ): Retrofit {
-        return Retrofit.Builder().baseUrl("https://www.jma.go.jp/bosai/").client(okHttpClient).addConverterFactory(GsonConverterFactory.create(gson)).build()
+        val contentType = "application/json".toMediaType()
+        return Retrofit
+            .Builder()
+            .baseUrl("https://www.jma.go.jp/bosai/")
+            .client(okHttpClient)
+            .addConverterFactory(kotlinSerializer.asConverterFactory(contentType))
+            .build()
     }
 
     @Singleton

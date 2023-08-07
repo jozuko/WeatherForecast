@@ -15,17 +15,17 @@ import com.jozu.weatherforecast.infrastructure.db.model.OfficeEntity
 @Dao
 interface AreaDao {
     @Query("select * from center join office on center.code = office.center_code order by center.code, office.code")
-    suspend fun getAll(): Map<CenterEntity, List<OfficeEntity>>
+    fun getAll(): Map<CenterEntity, List<OfficeEntity>>
 
     @Query("delete from center")
-    suspend fun deleteAllCenter()
+    fun deleteAllCenter()
 
     @Query("delete from office")
-    suspend fun deleteAllOffice()
+    fun deleteAllOffice()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCenter(centerEntity: CenterEntity)
+    fun insertCenter(centerEntity: CenterEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAllOffice(officeEntityList: List<OfficeEntity>)
+    fun insertAllOffice(officeEntityList: List<OfficeEntity>)
 }
