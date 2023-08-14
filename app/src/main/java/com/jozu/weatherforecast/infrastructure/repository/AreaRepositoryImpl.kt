@@ -39,20 +39,20 @@ class AreaRepositoryImpl @Inject constructor(
 ) : AreaRepository {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getArea(): Flow<Future<Area>> {
-        return flow {
-            val areaDataUpdatedAt = sharedPref.areaDataUpdatedAt
-            emit(areaDataUpdatedAt.isPassedTime(minutes = 10))
-        }.flatMapConcat { needServerData ->
-            if (needServerData) {
-                getAreaFromServer()
-            } else {
-                getAreaFromLocal()
-            }
-        }.onStart {
-            emit(Future.Proceeding)
-        }.catch { cause ->
-            emit(Future.Error(cause))
-        }.flowOn(dispatchers)
+        return sharedPref.areaDataUpdatedAt
+            .map { areaDataUpdatedAt ->
+                areaDataUpdatedAt.isPassedTime(minutes = 10)
+            }.flatMapConcat { needServerData ->
+                if (needServerData) {
+                    getAreaFromServer()
+                } else {
+                    getAreaFromLocal()
+                }
+            }.onStart {
+                emit(Future.Proceeding)
+            }.catch { cause ->
+                emit(Future.Error(cause))
+            }.flowOn(dispatchers)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -104,7 +104,7 @@ class AreaRepositoryImpl @Inject constructor(
                 }
             }
 
-            sharedPref.areaDataUpdatedAt = System.currentTimeMillis()
+            sharedPref.editAreaDataUpdatedAt(System.currentTimeMillis())
             emit(Future.Success(area))
         }.catch { cause ->
             emit(Future.Error(cause))

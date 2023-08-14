@@ -2,12 +2,14 @@ package com.jozu.weatherforecast.di.module
 
 import android.content.Context
 import android.util.Log
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.jozu.weatherforecast.infrastructure.api.ForecastApi
 import com.jozu.weatherforecast.infrastructure.db.AppDatabase
 import com.jozu.weatherforecast.infrastructure.db.AreaDao
-import com.jozu.weatherforecast.infrastructure.pref.SharedPref
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -99,12 +101,11 @@ object InfrastructureModule {
         return db.areaDao()
     }
 
+    private val dummyProp: Nothing? = null
+
     @Singleton
     @Provides
-    fun provideSharePref(
+    fun providePrefDataStore(
         @ApplicationContext context: Context,
-    ): SharedPref {
-        val sharedPreferences = context.getSharedPreferences("forecast_pref", Context.MODE_PRIVATE)
-        return SharedPref(sharedPreferences)
-    }
+    ): DataStore<Preferences> = preferencesDataStore(name = "forecast_pref_datasource").getValue(context, InfrastructureModule::dummyProp)
 }
